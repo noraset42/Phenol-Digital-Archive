@@ -10,23 +10,16 @@
         body { font-family: 'Sarabun', sans-serif; background-color: var(--bg); margin: 0; padding: 20px; color: var(--text); }
         .container { max-width: 1000px; margin: auto; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid #dadce0; }
         header { padding: 20px 25px; background: var(--primary); color: white; display: flex; justify-content: space-between; align-items: center; }
-        
         .btn-add { background: #34a853; color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; display: none; }
-        .btn-add:hover { background: #2d8e47; }
-
-        .breadcrumb { padding: 12px 25px; background: #fff; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 5px; font-size: 14px; flex-wrap: wrap; }
+        .breadcrumb { padding: 12px 25px; background: #fff; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 5px; font-size: 14px; }
         .breadcrumb span { color: var(--primary); cursor: pointer; padding: 4px 8px; border-radius: 4px; }
-        .breadcrumb .separator { color: #9aa0a6; }
-
         .search-box { padding: 15px 25px; background: #f8f9fa; border-bottom: 1px solid #eee; }
         #searchInput { width: 100%; padding: 12px 15px; border: 1px solid #dadce0; border-radius: 8px; outline: none; }
-
         .list-container { min-height: 500px; max-height: 70vh; overflow-y: auto; }
         .item { display: flex; align-items: center; padding: 12px 25px; border-bottom: 1px solid #f1f3f4; cursor: pointer; }
         .item:hover { background: #f8f9ff; }
         .name { flex: 1; }
         .btn-open { color: var(--pdf); text-decoration: none; font-weight: 600; border: 1px solid var(--pdf); padding: 5px 12px; border-radius: 6px; }
-
         .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
         .modal-content { background: white; padding: 30px; border-radius: 12px; width: 400px; }
         .form-group { margin-bottom: 15px; }
@@ -40,27 +33,16 @@
         <div style="font-size: 18px; font-weight: 600;">PHENOL DIGITAL ARCHIVE</div>
         <button class="btn-add" id="btnAddFile" onclick="openModal()">+ เพิ่มใบเบิก</button>
     </header>
-
     <div class="breadcrumb" id="breadcrumb"></div>
-
-    <div class="search-box">
-        <input type="text" id="searchInput" placeholder="🔍 ค้นหาในโฟลเดอร์นี้..." onkeyup="searchFiles()">
-    </div>
-
+    <div class="search-box"><input type="text" id="searchInput" placeholder="🔍 ค้นหาในโฟลเดอร์นี้..." onkeyup="searchFiles()"></div>
     <div class="list-container" id="listBody"></div>
 </div>
 
 <div class="modal" id="uploadModal">
     <div class="modal-content">
         <h3>เพิ่มใบเบิกใหม่</h3>
-        <div class="form-group">
-            <label>ชื่อรายการ</label>
-            <input type="text" id="newFileName" placeholder="ระบุชื่อใบเบิก...">
-        </div>
-        <div class="form-group">
-            <label>เลือกไฟล์ PDF</label>
-            <input type="file" id="newFileSource" accept=".pdf">
-        </div>
+        <div class="form-group"><label>ชื่อรายการ</label><input type="text" id="newFileName" placeholder="ระบุชื่อใบเบิก..."></div>
+        <div class="form-group"><label>เลือกไฟล์ PDF</label><input type="file" id="newFileSource" accept=".pdf"></div>
         <div id="uploadStatus" style="font-size: 12px; color: var(--primary); margin-bottom: 10px;"></div>
         <div style="display:flex; justify-content: flex-end; gap: 10px;">
             <button onclick="closeModal()">ยกเลิก</button>
@@ -74,7 +56,6 @@
     import { getFirestore, doc, collection, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
-    // ข้อมูลจาก Firebase Config ของคุณ
     const firebaseConfig = {
         apiKey: "AIzaSyBoz9ucEZ3bxpih-nwHGg2Sf7SoekdQzmc",
         authDomain: "phenoldigital.firebaseapp.com",
@@ -93,21 +74,17 @@
     const teams = ["Instrument 1", "Instrument 2", "Mechanical 1", "Mechanical 2", "Control System"];
     let currentPath = 'root';
 
-    function daysInMonth(m, y) { return new Date(y, m, 0).getDate(); }
-
     window.renderFolders = async function(path) {
         currentPath = path;
         const listBody = document.getElementById('listBody');
         const btnAdd = document.getElementById('btnAddFile');
         const pathParts = path.split('|');
         
-        // ปุ่มเพิ่มไฟล์โชว์เฉพาะระดับ วัน (4 ชั้น)
         btnAdd.style.display = pathParts.length === 4 ? 'block' : 'none';
         updateBreadcrumb(path);
         listBody.innerHTML = '<div style="padding:20px; text-align:center;">กำลังโหลด...</div>';
 
         let items = [];
-
         if (path === 'root') {
             items = [{ name: '2025', type: 'folder', target: '2025' }, { name: '2026', type: 'folder', target: '2026' }];
         } else if (pathParts.length === 1) { // ปี -> ทีม
@@ -115,32 +92,24 @@
         } else if (pathParts.length === 2) { // ทีม -> เดือน
             items = months.map((m, i) => ({ name: m, type: 'folder', target: `${path}|${(i+1).toString().padStart(2, '0')}` }));
         } else if (pathParts.length === 3) { // เดือน -> วัน
-            let total = daysInMonth(parseInt(pathParts[2]), parseInt(pathParts[0]));
-            for (let d = 1; d <= total; d++) {
-                items.push({ name: `วันที่ ${d.toString().padStart(2, '0')}`, type: 'folder', target: `${path}|${d.toString().padStart(2, '0')}` });
+            let days = new Date(pathParts[0], pathParts[2], 0).getDate();
+            for (let d = 1; d <= days; d++) {
+                let dStr = d.toString().padStart(2, '0');
+                items.push({ name: `วันที่ ${dStr}`, type: 'folder', target: `${path}|${dStr}` });
             }
-        } else { // ระดับวัน -> ดึงไฟล์จากฐานข้อมูล
-            try {
-                const querySnapshot = await getDocs(collection(db, "files", path, "uploads"));
-                querySnapshot.forEach((doc) => { items.push(doc.data()); });
-            } catch (e) { console.error(e); }
+        } else { // ระดับวัน -> ดึงไฟล์
+            const querySnapshot = await getDocs(collection(db, "files", path, "uploads"));
+            querySnapshot.forEach((doc) => items.push(doc.data()));
         }
 
-        listBody.innerHTML = '';
-        if (items.length === 0) {
-            listBody.innerHTML = '<div style="padding:50px; text-align:center; color:#999;">ยังไม่มีข้อมูล</div>';
-            return;
-        }
-
+        listBody.innerHTML = items.length === 0 ? '<div style="padding:50px; text-align:center; color:#999;">ไม่มีข้อมูล</div>' : '';
         items.forEach(item => {
             const div = document.createElement('div');
             div.className = 'item';
-            if (item.type === 'folder') {
-                div.onclick = () => renderFolders(item.target);
-                div.innerHTML = `<div style="margin-right:15px; color:var(--folder);">📁</div><div class="name">${item.name}</div>`;
-            } else {
-                div.innerHTML = `<div style="margin-right:15px; color:var(--pdf);">📄</div><div class="name">${item.name}</div><a href="${item.url}" target="_blank" class="btn-open">เปิดไฟล์</a>`;
-            }
+            div.innerHTML = item.type === 'folder' 
+                ? `<div style="margin-right:15px; color:var(--folder);">📁</div><div class="name">${item.name}</div>`
+                : `<div style="margin-right:15px; color:var(--pdf);">📄</div><div class="name">${item.name}</div><a href="${item.url}" target="_blank" class="btn-open">เปิด PDF</a>`;
+            if(item.type === 'folder') div.onclick = () => renderFolders(item.target);
             listBody.appendChild(div);
         });
     }
@@ -151,58 +120,46 @@
         if (path !== 'root') {
             const parts = path.split('|');
             parts.forEach((p, i) => {
-                let label = p;
-                if (i === 2) label = months[parseInt(p)-1];
-                if (i === 3) label = "วันที่ " + p;
-                html += `<div class="separator">></div><span onclick="renderFolders('${parts.slice(0,i+1).join('|')}')">${label}</span>`;
+                let txt = p;
+                if(i===2) txt = months[parseInt(p)-1];
+                if(i===3) txt = "วันที่ " + p;
+                html += ` <span style="color:#999;">></span> <span onclick="renderFolders('${parts.slice(0,i+1).join('|')}')">${txt}</span>`;
             });
         }
         bc.innerHTML = html;
     }
 
     window.openModal = () => document.getElementById('uploadModal').style.display = 'flex';
-    window.closeModal = () => {
-        document.getElementById('uploadModal').style.display = 'none';
-        document.getElementById('uploadStatus').innerText = '';
-        document.getElementById('newFileName').value = '';
-        document.getElementById('newFileSource').value = '';
-    };
+    window.closeModal = () => document.getElementById('uploadModal').style.display = 'none';
 
     window.saveFile = async function() {
         const name = document.getElementById('newFileName').value;
         const fileInput = document.getElementById('newFileSource');
-        const status = document.getElementById('uploadStatus');
-        const btnSave = document.getElementById('btnSave');
+        const btn = document.getElementById('btnSave');
+        if (!name || !fileInput.files[0]) return alert('กรุณาเลือกไฟล์');
 
-        if (!name || !fileInput.files[0]) { alert('กรุณาระบุชื่อและเลือกไฟล์'); return; }
-
+        btn.disabled = true;
+        btn.innerText = "กำลังส่ง...";
         try {
-            btnSave.disabled = true;
-            status.innerText = "กำลังอัปโหลด...";
             const file = fileInput.files[0];
-            const storageRef = ref(storage, `archive/${currentPath}/${Date.now()}_${file.name}`);
+            const sRef = ref(storage, `archive/${currentPath}/${Date.now()}.pdf`);
+            const snap = await uploadBytes(sRef, file);
+            const url = await getDownloadURL(snap.ref);
+
+            await setDoc(doc(collection(db, "files", currentPath, "uploads")), { name, type: 'file', url, createdAt: new Date() });
             
-            const snapshot = await uploadBytes(storageRef, file);
-            const downloadURL = await getDownloadURL(snapshot.ref);
-
-            const fileData = { name: name, type: 'file', url: downloadURL, createdAt: new Date() };
-            await setDoc(doc(collection(db, "files", currentPath, "uploads")), fileData);
-
-            status.innerText = "สำเร็จ!";
-            setTimeout(() => { renderFolders(currentPath); closeModal(); btnSave.disabled = false; }, 1000);
-        } catch (e) {
-            alert('เกิดข้อผิดพลาด');
-            btnSave.disabled = false;
-        }
+            closeModal();
+            renderFolders(currentPath);
+        } catch (e) { alert('ผิดพลาด!'); }
+        btn.disabled = false;
+        btn.innerText = "บันทึก";
     }
 
-    window.searchFiles = function() {
-        let input = document.getElementById("searchInput").value.toLowerCase();
-        let items = document.getElementsByClassName("item");
-        for (let i = 0; i < items.length; i++) {
-            let name = items[i].querySelector(".name").innerText.toLowerCase();
-            items[i].style.display = name.includes(input) ? "flex" : "none";
-        }
+    window.searchFiles = () => {
+        let val = document.getElementById("searchInput").value.toLowerCase();
+        Array.from(document.getElementsByClassName("item")).forEach(el => {
+            el.style.display = el.innerText.toLowerCase().includes(val) ? "flex" : "none";
+        });
     }
 
     renderFolders('root');
