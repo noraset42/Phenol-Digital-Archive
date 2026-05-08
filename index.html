@@ -3,195 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WMS Digital Archive - Full System</title>
+    <title>Phenol Digital Archive</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #1a73e8; --folder: #ffca28; --pdf: #d93025; --bg: #f1f3f4; --text: #3c4043; }
         body { font-family: 'Sarabun', sans-serif; background-color: var(--bg); margin: 0; padding: 20px; color: var(--text); }
-        .container { max-width: 1000px; margin: auto; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid #dadce0; position: relative; }
-        
+        .container { max-width: 1000px; margin: auto; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid #dadce0; }
         header { padding: 20px 25px; background: var(--primary); color: white; display: flex; justify-content: space-between; align-items: center; }
-        
-        /* ปุ่มเพิ่มไฟล์ */
-        .btn-add { background: #34a853; color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; display: none; transition: 0.3s; }
-        .btn-add:hover { background: #2d8e47; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
-
+        .btn-add { background: #34a853; color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; display: none; }
         .breadcrumb { padding: 12px 25px; background: #fff; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 5px; font-size: 14px; flex-wrap: wrap; }
         .breadcrumb span { color: var(--primary); cursor: pointer; padding: 4px 8px; border-radius: 4px; }
-        .breadcrumb span:hover { background: #e8f0fe; }
-
+        .breadcrumb .separator { color: #9aa0a6; }
         .search-box { padding: 15px 25px; background: #f8f9fa; border-bottom: 1px solid #eee; }
         #searchInput { width: 100%; padding: 12px 15px; border: 1px solid #dadce0; border-radius: 8px; outline: none; }
-
         .list-container { min-height: 500px; max-height: 70vh; overflow-y: auto; }
         .item { display: flex; align-items: center; padding: 12px 25px; border-bottom: 1px solid #f1f3f4; }
         .item:hover { background: #f8f9ff; }
-        .icon { font-size: 22px; margin-right: 15px; width: 30px; text-align: center; }
         .name { flex: 1; }
         .btn-open { color: var(--pdf); text-decoration: none; font-weight: 600; border: 1px solid var(--pdf); padding: 5px 12px; border-radius: 6px; }
-
-        /* Modal Style */
         .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 30px; border-radius: 12px; width: 400px; box-shadow: 0 5px 30px rgba(0,0,0,0.3); }
-        .modal-content h3 { margin-top: 0; color: var(--primary); }
+        .modal-content { background: white; padding: 30px; border-radius: 12px; width: 400px; }
         .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
         .form-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
-        .btn-cancel { background: #eee; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; }
-        .btn-save { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <div style="font-size: 18px; font-weight: 600;">ระบบจัดเก็บใบเบิกดิจิทัล (WMS GC)</div>
+        <div style="font-size: 18px; font-weight: 600;">PHENOL DIGITAL ARCHIVE</div>
         <button class="btn-add" id="btnAddFile" onclick="openModal()">+ เพิ่มใบเบิก</button>
     </header>
-
     <div class="breadcrumb" id="breadcrumb"></div>
-
-    <div class="search-box">
-        <input type="text" id="searchInput" placeholder="🔍 ค้นหาในโฟลเดอร์นี้..." onkeyup="searchFiles()">
-    </div>
-
+    <div class="search-box"><input type="text" id="searchInput" placeholder="🔍 ค้นหาในโฟลเดอร์นี้..." onkeyup="searchFiles()"></div>
     <div class="list-container" id="listBody"></div>
 </div>
 
 <div class="modal" id="uploadModal">
     <div class="modal-content">
         <h3>เพิ่มใบเบิกใหม่</h3>
-        <div class="form-group">
-            <label>ชื่อรายการ / ชื่อไฟล์</label>
-            <input type="text" id="newFileName" placeholder="เช่น ใบเบิกอะไหล่เครื่องจักร...">
-        </div>
-        <div class="form-group">
-            <label>เลือกไฟล์ PDF</label>
-            <input type="file" id="newFileSource" accept=".pdf">
-        </div>
-        <div class="modal-footer">
-            <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
-            <button class="btn-save" onclick="saveFile()">บันทึกข้อมูล</button>
+        <div class="form-group"><label>ชื่อรายการ</label><input type="text" id="newFileName" placeholder="ระบุชื่อใบเบิก..."></div>
+        <div class="form-group"><label>ไฟล์ PDF</label><input type="file" id="newFileSource" accept=".pdf"></div>
+        <div id="uploadStatus" style="font-size: 12px; color: var(--primary); margin-bottom: 10px;"></div>
+        <div style="display:flex; justify-content: flex-end; gap: 10px;">
+            <button onclick="closeModal()">ยกเลิก</button>
+            <button id="btnSave" style="background:var(--primary); color:white; border:none; padding:10px 20px; border-radius:6px;" onclick="saveFile()">บันทึก</button>
         </div>
     </div>
 </div>
 
-<script>
-    const months = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBoz9ucEZ3bxpih-nwHGg2Sf7SoekdQzmc",
+        authDomain: "phenoldigital.firebaseapp.com",
+        projectId: "phenoldigital",
+        storageBucket: "phenoldigital.firebasestorage.app",
+        messagingSenderId: "171042527956",
+        appId: "1:171042527956:web:c85e0c8d8b4ea49829b941",
+        measurementId: "G-QCFPFMHK4P"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+
+    window.months = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
     const teams = ["Instrument 1", "Instrument 2", "Mechanical 1", "Mechanical 2", "Control System"];
     let currentPath = 'root';
-    
-    // โหลดข้อมูลจาก LocalStorage หรือใช้ค่าว่างถ้าไม่มี
-    let customDatabase = JSON.parse(localStorage.getItem('wms_db')) || {};
 
-    function daysInMonth(month, year) { return new Date(year, month, 0).getDate(); }
+    // ฟังก์ชันช่วยจัดการวันที่
+    const daysInMonth = (m, y) => new Date(y, m, 0).getDate();
 
-    const staticDatabase = { 'root': [{ name: '2025', type: 'folder', target: '2025' }, { name: '2026', type: 'folder', target: '2026' }]};
-
-    // สร้างโครงสร้างพื้นฐาน
-    [2025, 2026].forEach(year => {
-        staticDatabase[year] = teams.map(t => ({ name: t, type: 'folder', target: `${year}|${t}` }));
-        teams.forEach(team => {
-            let teamKey = `${year}|${team}`;
-            staticDatabase[teamKey] = months.map((m, index) => ({
-                name: m, type: 'folder', target: `${year}|${team}|${(index+1).toString().padStart(2, '0')}`
-            }));
-            months.forEach((m, index) => {
-                let monthNum = (index+1).toString().padStart(2, '0');
-                let monthKey = `${year}|${team}|${monthNum}`;
-                staticDatabase[monthKey] = [];
-                for (let d = 1; d <= daysInMonth(index + 1, year); d++) {
-                    staticDatabase[monthKey].push({
-                        name: `วันที่ ${d.toString().padStart(2, '0')}`, type: 'folder', target: `${monthKey}|${d.toString().padStart(2, '0')}`
-                    });
-                }
-            });
-        });
-    });
-
-    function renderFolders(path) {
+    window.renderFolders = async function(path) {
         currentPath = path;
         const listBody = document.getElementById('listBody');
         const btnAdd = document.getElementById('btnAddFile');
-        
-        // แสดงปุ่มเพิ่มไฟล์เฉพาะเมื่ออยู่ในระดับ "วัน" (Path มี 4 ส่วน: ปี|ทีม|เดือน|วัน)
         const pathParts = path.split('|');
+        
         btnAdd.style.display = pathParts.length === 4 ? 'block' : 'none';
-
         updateBreadcrumb(path);
-        listBody.innerHTML = '';
+        listBody.innerHTML = '<div style="padding:20px; text-align:center;">กำลังโหลด...</div>';
 
-        // รวมข้อมูล Static และข้อมูลที่ผู้ใช้เพิ่มเอง
-        const items = [...(staticDatabase[path] || []), ...(customDatabase[path] || [])];
+        let items = [];
 
-        if (items.length === 0) {
-            listBody.innerHTML = '<div style="padding:50px; text-align:center; color:#999;">ยังไม่มีไฟล์ใบเบิกในวันนี้</div>';
-            return;
-        }
-
-        items.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'item';
-            if (item.type === 'folder') {
-                div.onclick = () => renderFolders(item.target);
-                div.innerHTML = `<div class="icon" style="color:var(--folder)">📁</div><div class="name">${item.name}</div>`;
-            } else {
-                div.innerHTML = `
-                    <div class="icon" style="color:var(--pdf)">📄</div>
-                    <div class="name">${item.name}</div>
-                    <a href="${item.url}" target="_blank" class="btn-open">เปิดไฟล์</a>
-                `;
-            }
-            listBody.appendChild(div);
-        });
-    }
-
-    function updateBreadcrumb(path) {
-        const bc = document.getElementById('breadcrumb');
-        let html = `<span onclick="renderFolders('root')">🏠 หน้าแรก</span>`;
-        if (path !== 'root') {
-            const parts = path.split('|');
-            if (parts[0]) html += `<div class="separator">></div><span onclick="renderFolders('${parts[0]}')">${parts[0]}</span>`;
-            if (parts[1]) html += `<div class="separator">></div><span onclick="renderFolders('${parts[0]}|${parts[1]}')">${parts[1]}</span>`;
-            if (parts[2]) html += `<div class="separator">></div><span onclick="renderFolders('${parts[0]}|${parts[1]}|${parts[2]}')">${months[parseInt(parts[2])-1]}</span>`;
-            if (parts[3]) html += `<div class="separator">></div><span class="current">วันที่ ${parts[3]}</span>`;
-        }
-        bc.innerHTML = html;
-    }
-
-    // Modal Logic
-    function openModal() { document.getElementById('uploadModal').style.display = 'flex'; }
-    function closeModal() { document.getElementById('uploadModal').style.display = 'none'; }
-
-    function saveFile() {
-        const name = document.getElementById('newFileName').value;
-        const fileInput = document.getElementById('newFileSource');
-        
-        if (!name || !fileInput.files[0]) { alert('กรุณากรอกชื่อและเลือกไฟล์'); return; }
-
-        // ในระบบจริงต้องส่งไฟล์ไป Server แต่ในที่นี้เราจะใช้ชื่อไฟล์จำลองไปก่อน
-        const fileName = fileInput.files[0].name;
-        
-        if (!customDatabase[currentPath]) customDatabase[currentPath] = [];
-        customDatabase[currentPath].push({ name: name, type: 'file', url: '#' }); // ใส่ '#' แทน URL จริง
-
-        localStorage.setItem('wms_db', JSON.stringify(customDatabase));
-        renderFolders(currentPath);
-        closeModal();
-        document.getElementById('newFileName').value = '';
-    }
-
-    function searchFiles() {
-        let input = document.getElementById("searchInput").value.toLowerCase();
-        let items = document.getElementsByClassName("item");
-        for (let i = 0; i < items.length; i++) {
-            let name = items[i].querySelector(".name").innerText.toLowerCase();
-            items[i].style.display = name.includes(input) ? "flex" : "none";
-        }
-    }
-
-    renderFolders('root');
-</script>
-</body>
-</html>
+        // ลอจิกการแสดงโฟลเดอร์ตามลำดับชั้น
+        if (path === 'root') {
+            items = [{ name: '2025', type: 'folder', target: '2025' }, { name: '2026', type: 'folder', target: '2026' }];
+        } else if (pathParts.length === 1) { // ปี -> ทีม
+            items = teams.map(t => ({ name: t, type: 'folder', target: `${path}|${t}` }));
+        } else if (pathParts.length === 2) { // ทีม -> เดือน
+            items = window.months.map((m, i) => ({ name: m, type: 'folder', target: `${path}|${(i+1).toString().padStart(2, '0')}` }));
+        } else if (pathParts.length === 3) { // เดือน -> วัน
+            let total = daysInMonth(parseInt(pathParts[2]), parseInt(pathParts[0]));
